@@ -9,6 +9,5 @@ public class DbRegistrar : IWebApplicationBuilderRegistrar
     {
         var connectionString = builder.Configuration.GetConnectionString("Default");
         builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
-
     }
 }
