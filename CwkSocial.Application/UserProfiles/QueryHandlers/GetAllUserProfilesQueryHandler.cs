@@ -1,4 +1,5 @@
-﻿using CwkSocial.Application.UserProfiles.Queries;
+﻿using CwkSocial.Application.Models;
+using CwkSocial.Application.UserProfiles.Queries;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.UserProfileAggregate;
 using MediatR;
@@ -6,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CwkSocial.Application.UserProfiles.QueryHandlers;
 
-internal class GetAllUserProfilesQueryHandler : IRequestHandler<GetAllUserProfilesQuery, IEnumerable<UserProfile>>
+internal class
+    GetAllUserProfilesQueryHandler : IRequestHandler<GetAllUserProfilesQuery, OperationResult<IEnumerable<UserProfile>>>
 {
     private readonly DataContext _context;
 
@@ -15,9 +17,11 @@ internal class GetAllUserProfilesQueryHandler : IRequestHandler<GetAllUserProfil
         _context = context;
     }
 
-    public async Task<IEnumerable<UserProfile>> Handle(GetAllUserProfilesQuery request,
+    public async Task<OperationResult<IEnumerable<UserProfile>>> Handle(GetAllUserProfilesQuery request,
         CancellationToken cancellationToken)
     {
-        return await _context.UserProfiles.ToListAsync();
+        var result = new OperationResult<IEnumerable<UserProfile>>();
+        result.Payload = await _context.UserProfiles.ToListAsync();
+        return result;
     }
 }
