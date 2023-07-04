@@ -11,7 +11,7 @@ namespace CwkSocial.Api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route(ApiRoutes.BaseRoute)]
 [ApiController]
-public class UserProfilesController : Controller
+public class UserProfilesController : BaseController
 {
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
@@ -47,6 +47,9 @@ public class UserProfilesController : Controller
         var query = new GetUserProfileByIdQuery { UserProfileId = Guid.Parse(id) };
         var response = await _mediator.Send(query);
         var userProfile = _mapper.Map<UserProfileResponse>(response);
+
+        if (userProfile is null) return NotFound($"No user with profile ID {id}");
+
         return Ok(userProfile);
     }
 
@@ -56,9 +59,11 @@ public class UserProfilesController : Controller
     {
         var command = _mapper.Map<UpdateUserProfileBasicInfoCommand>(profile);
         command.UserProfileId = Guid.Parse(id);
-        await _mediator.Send(command);
+        var response = await _mediator.Send(command);
 
-        return NoContent();
+        return response.isError
+            ? HandleErroroResponse(response.Errors)
+            : NoContent();
     }
 
     [HttpDelete]
@@ -67,7 +72,7 @@ public class UserProfilesController : Controller
     {
         var command = new DeleteUserProfileCommand { UserProfileId = Guid.Parse(id) };
         await _mediator.Send(command);
-        
+
         return NoContent();
     }
 }

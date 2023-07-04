@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using CwkSocial.Application.Enums;
+using CwkSocial.Application.Models;
 using CwkSocial.Application.UserProfiles.Commands;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.UserProfileAggregate;
@@ -7,7 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CwkSocial.Application.UserProfiles.CommandHandlers;
 
-public class UpdateUserProfileBasicInfoCommandHandler : IRequestHandler<UpdateUserProfileBasicInfoCommand>
+public class
+    UpdateUserProfileBasicInfoCommandHandler : IRequestHandler<UpdateUserProfileBasicInfoCommand,
+        OperationResult<UserProfile>>
 {
     private readonly DataContext _context;
 
@@ -16,18 +20,41 @@ public class UpdateUserProfileBasicInfoCommandHandler : IRequestHandler<UpdateUs
         _context = context;
     }
 
-    public async Task<Unit> Handle(UpdateUserProfileBasicInfoCommand request, CancellationToken cancellationToken)
+    public async Task<OperationResult<UserProfile>> Handle(UpdateUserProfileBasicInfoCommand request,
+        CancellationToken cancellationToken)
     {
-        var userProfile = await _context.UserProfiles
-            .FirstOrDefaultAsync(profile => profile.UserProfileId == request.UserProfileId);
+        var result = new OperationResult<UserProfile>();
+        try
+        {
+            var userProfile = await _context.UserProfiles
+                .FirstOrDefaultAsync(profile => profile.UserProfileId == request.UserProfileId);
 
-        var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
-            request.Phone, request.DateOfBirth, request.CurrentCity);
+            if (userProfile is null)
+            {
+                result.isError = true;
+                var error = new Error
+                    { Code = ErrorCode.NotFound, Message = $"No UserProfile with ID {request.UserProfileId}" };
+                result.Errors.Add(error);
+                return result;
+            }
 
-        userProfile.UpdateBasicInfo(basicInfo);
+            var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
+                request.Phone, request.DateOfBirth, request.CurrentCity);
 
-        _context.UserProfiles.Update(userProfile);
-        await _context.SaveChangesAsync();
-        return new Unit();
+            userProfile.UpdateBasicInfo(basicInfo);
+
+            _context.UserProfiles.Update(userProfile);
+            await _context.SaveChangesAsync();
+            result.Payload = userProfile;
+            return result;
+        }
+        catch (Exception e)
+        {
+            var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
+            result.isError = true;
+            result.Errors.Add(error);
+        }
+
+        return result;
     }
 }
