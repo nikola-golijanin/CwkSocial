@@ -38,7 +38,7 @@ public class
                 return result;
             }
 
-            var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
+            var basicInfo = BasicInfo.TryCreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
                 request.Phone, request.DateOfBirth, request.CurrentCity);
 
             userProfile.UpdateBasicInfo(basicInfo);

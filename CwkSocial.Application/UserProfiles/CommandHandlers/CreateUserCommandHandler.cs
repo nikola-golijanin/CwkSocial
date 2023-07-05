@@ -19,7 +19,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
     public async Task<OperationResult<UserProfile>> Handle(CreateUserCommand request,
         CancellationToken cancellationToken)
     {
-        var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
+        var basicInfo = BasicInfo.TryCreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
             request.Phone, request.DateOfBirth, request.CurrentCity);
 
         var userProfile = UserProfile.CreateUserProfile(Guid.NewGuid().ToString(), basicInfo);
