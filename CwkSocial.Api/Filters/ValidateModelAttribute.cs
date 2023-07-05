@@ -6,7 +6,7 @@ namespace CwkSocial.Api.Filters;
 
 public class ValidateModelAttribute : ActionFilterAttribute
 {
-    public override void OnActionExecuting(ActionExecutingContext context)
+    public override void OnResultExecuting(ResultExecutingContext context)
     {
         if (!context.ModelState.IsValid)
         {

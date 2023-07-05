@@ -13,11 +13,6 @@ public class MvcRegistrar : IWebApplicationBuilderRegistrar
             options.Filters.Add<GlobalExceptionFilter>();
         });
 
-        builder.Services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.SuppressModelStateInvalidFilter = true;
-        });
-        
         builder.Services.AddApiVersioning(config =>
         {
             config.DefaultApiVersion = new ApiVersion(1, 0);
