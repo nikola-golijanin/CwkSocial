@@ -27,8 +27,8 @@ public class UserProfilesController : BaseController
     public async Task<IActionResult> GetAllProfiles()
     {
         var query = new GetAllUserProfilesQuery();
-        var response = await _mediator.Send(query);
-        var profiles = _mapper.Map<List<UserProfileResponse>>(response.Payload);
+        var result = await _mediator.Send(query);
+        var profiles = _mapper.Map<List<UserProfileResponse>>(result.Payload);
         return Ok(profiles);
     }
 
@@ -37,14 +37,14 @@ public class UserProfilesController : BaseController
     public async Task<IActionResult> CreateUserProfile([FromBody] UserProfileCreateOrUpdate profile)
     {
         var command = _mapper.Map<CreateUserCommand>(profile);
-        var response = await _mediator.Send(command);
+        var result = await _mediator.Send(command);
         
-        if (response.isError)
+        if (result.isError)
         {
-            return HandleErroroResponse(response.Errors);
+            return HandleErroroResponse(result.Errors);
         }
         
-        var userProfile = _mapper.Map<UserProfileResponse>(response.Payload);
+        var userProfile = _mapper.Map<UserProfileResponse>(result.Payload);
 
         return CreatedAtAction(nameof(GetUserProfileById),
             new { id = userProfile.UserProfileId }, userProfile);
@@ -56,14 +56,14 @@ public class UserProfilesController : BaseController
     public async Task<IActionResult> GetUserProfileById(string id)
     {
         var query = new GetUserProfileByIdQuery { UserProfileId = Guid.Parse(id) };
-        var response = await _mediator.Send(query);
+        var result = await _mediator.Send(query);
 
-        if (response.isError)
+        if (result.isError)
         {
-            return HandleErroroResponse(response.Errors);
+            return HandleErroroResponse(result.Errors);
         }
 
-        var userProfile = _mapper.Map<UserProfileResponse>(response.Payload);
+        var userProfile = _mapper.Map<UserProfileResponse>(result.Payload);
         return Ok(userProfile);
     }
 
@@ -75,10 +75,10 @@ public class UserProfilesController : BaseController
     {
         var command = _mapper.Map<UpdateUserProfileBasicInfoCommand>(profile);
         command.UserProfileId = Guid.Parse(id);
-        var response = await _mediator.Send(command);
+        var result = await _mediator.Send(command);
 
-        return response.isError
-            ? HandleErroroResponse(response.Errors)
+        return result.isError
+            ? HandleErroroResponse(result.Errors)
             : NoContent();
     }
 
@@ -88,10 +88,10 @@ public class UserProfilesController : BaseController
     public async Task<IActionResult> DeleteUserProfile(string id)
     {
         var command = new DeleteUserProfileCommand { UserProfileId = Guid.Parse(id) };
-        var response = await _mediator.Send(command);
+        var result = await _mediator.Send(command);
 
-        return response.isError
-            ? HandleErroroResponse(response.Errors)
+        return result.isError
+            ? HandleErroroResponse(result.Errors)
             : NoContent();
     }
 }
