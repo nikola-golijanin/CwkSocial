@@ -38,7 +38,6 @@ public class
                 result.Errors.Add(error);
                 return result;
             }
-
             
             var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
                 request.Phone, request.DateOfBirth, request.CurrentCity);
@@ -48,7 +47,6 @@ public class
             _context.UserProfiles.Update(userProfile);
             await _context.SaveChangesAsync();
             result.Payload = userProfile;
-            return result;
         }
         catch (UserProfileNotValidException ex)
         {
@@ -62,7 +60,6 @@ public class
                 };
                 result.Errors.Add(error);
             });
-            return result;
         }
         catch (Exception e)
         {
