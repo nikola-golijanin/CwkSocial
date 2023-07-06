@@ -25,7 +25,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
 
         try
         {
-            var basicInfo = BasicInfo.CreateBasicInfo("a", request.LastName, request.EmailAddress,
+            var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
                 request.Phone, request.DateOfBirth, request.CurrentCity);
 
             var userProfile = UserProfile.CreateUserProfile(Guid.NewGuid().ToString(), basicInfo);
@@ -47,7 +47,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
                 };
                 result.Errors.Add(error);
             });
-            return result;
         }
+        return result;
     }
 }
