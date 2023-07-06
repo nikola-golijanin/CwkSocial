@@ -38,6 +38,12 @@ public class UserProfilesController : BaseController
     {
         var command = _mapper.Map<CreateUserCommand>(profile);
         var response = await _mediator.Send(command);
+        
+        if (response.isError)
+        {
+            return HandleErroroResponse(response.Errors);
+        }
+        
         var userProfile = _mapper.Map<UserProfileResponse>(response.Payload);
 
         return CreatedAtAction(nameof(GetUserProfileById),
@@ -45,7 +51,7 @@ public class UserProfilesController : BaseController
     }
 
     [HttpGet]
-    [Route(ApiRoutes.UserProfiles.GetById)]
+    [Route(ApiRoutes.UserProfiles.IdRoute)]
     [ValidateGuid("id")]
     public async Task<IActionResult> GetUserProfileById(string id)
     {
@@ -62,7 +68,7 @@ public class UserProfilesController : BaseController
     }
 
     [HttpPatch]
-    [Route(ApiRoutes.UserProfiles.GetById)]
+    [Route(ApiRoutes.UserProfiles.IdRoute)]
     [ValidateModel]
     [ValidateGuid("id")]
     public async Task<IActionResult> UpdateUserProfile(string id, [FromBody] UserProfileCreateOrUpdate profile)
@@ -77,7 +83,7 @@ public class UserProfilesController : BaseController
     }
 
     [HttpDelete]
-    [Route(ApiRoutes.UserProfiles.GetById)]
+    [Route(ApiRoutes.UserProfiles.IdRoute)]
     [ValidateGuid("id")]
     public async Task<IActionResult> DeleteUserProfile(string id)
     {

@@ -9,6 +9,7 @@ public class BaseController : ControllerBase
 {
     protected IActionResult HandleErroroResponse(List<Error> errors)
     {
+        //TODO implement support for other types of Error Codes
         var apiError = new ErrorResponse();
         
         if (errors.Any(e => e.Code == ErrorCode.NotFound))

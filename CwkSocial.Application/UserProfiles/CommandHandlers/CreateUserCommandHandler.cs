@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using CwkSocial.Application.Enums;
 using CwkSocial.Application.Models;
 using CwkSocial.Application.UserProfiles.Commands;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.UserProfileAggregate;
+using CwkSocial.Domain.Exceptions;
 using MediatR;
 
 namespace CwkSocial.Application.UserProfiles.CommandHandlers;
@@ -19,15 +21,33 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
     public async Task<OperationResult<UserProfile>> Handle(CreateUserCommand request,
         CancellationToken cancellationToken)
     {
-        var basicInfo = BasicInfo.TryCreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
-            request.Phone, request.DateOfBirth, request.CurrentCity);
-
-        var userProfile = UserProfile.CreateUserProfile(Guid.NewGuid().ToString(), basicInfo);
-        _context.UserProfiles.Add(userProfile);
-        await _context.SaveChangesAsync();
-
         var result = new OperationResult<UserProfile>();
-        result.Payload = userProfile;
-        return result;
+
+        try
+        {
+            var basicInfo = BasicInfo.CreateBasicInfo("a", request.LastName, request.EmailAddress,
+                request.Phone, request.DateOfBirth, request.CurrentCity);
+
+            var userProfile = UserProfile.CreateUserProfile(Guid.NewGuid().ToString(), basicInfo);
+            _context.UserProfiles.Add(userProfile);
+            await _context.SaveChangesAsync();
+
+            result.Payload = userProfile;
+            return result;
+        }
+        catch (UserProfileNotValidException ex)
+        {
+            result.isError = true;
+            ex.ValidationErrors.ForEach(e =>
+            {
+                var error = new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = $"{ex.Message}",
+                };
+                result.Errors.Add(error);
+            });
+            return result;
+        }
     }
 }

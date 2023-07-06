@@ -6,11 +6,11 @@ public class ApiRoutes
 
     public class UserProfiles
     {
-        public const string GetById = "{id}";
+        public const string IdRoute = "{id}";
     }
     
     public class Posts
     {
-        public const string GetById = "{id}";
+        public const string IdRoute = "{id}";
     }
 }

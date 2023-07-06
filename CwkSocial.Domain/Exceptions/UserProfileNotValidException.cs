@@ -1,16 +1,8 @@
 ﻿namespace CwkSocial.Domain.Exceptions;
 
-public class UserProfileNotValidException : Exception
+public class UserProfileNotValidException : NotValidException
 {
-    internal UserProfileNotValidException()
-    {
-        ValidationErrors = new();
-    }
-
-    internal UserProfileNotValidException(string message) : base(message)
-    {
-        ValidationErrors = new();
-    }
-
-    public List<string> ValidationErrors { get; }
+    internal UserProfileNotValidException() : base(){}
+    internal UserProfileNotValidException(string message) : base(message){}
+    internal UserProfileNotValidException(string message,Exception inner): base(message,inner){}
 }

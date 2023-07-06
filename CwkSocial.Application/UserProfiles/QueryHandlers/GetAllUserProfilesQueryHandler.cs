@@ -7,8 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CwkSocial.Application.UserProfiles.QueryHandlers;
 
-internal class
-    GetAllUserProfilesQueryHandler : IRequestHandler<GetAllUserProfilesQuery, OperationResult<IEnumerable<UserProfile>>>
+internal class GetAllUserProfilesQueryHandler : IRequestHandler<GetAllUserProfilesQuery, OperationResult<IEnumerable<UserProfile>>>
 {
     private readonly DataContext _context;
 

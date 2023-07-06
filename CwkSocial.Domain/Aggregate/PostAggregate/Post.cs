@@ -1,4 +1,6 @@
 ﻿using CwkSocial.Domain.Aggregate.UserProfileAggregate;
+using CwkSocial.Domain.Exceptions;
+using CwkSocial.Domain.Validators.PostsValidators;
 
 namespace CwkSocial.Domain.Aggregate.PostAggregate;
 
@@ -30,21 +32,50 @@ public class Post
 
 
     //factories
+    /// <summary>
+    /// Create post
+    /// </summary>
+    /// <param name="userProfileId">The ID of user who created the comment</param>
+    /// <param name="textContent">Text content of comment</param>
+    /// <returns><see cref="Post"/></returns>
+    /// <exception cref="PostNotValidException">Thrown if data provided for the post is not valid</exception>
     public static Post CreatePost(Guid userProfileId, string textContent)
     {
-        //TODO: add validation, error handling strategies, error notification strategies
-        return new Post
+        var validator = new PostValidator();
+        var objectToValidate = new Post
         {
             UserProfileId = userProfileId,
             TextContent = textContent,
             DateCreated = DateTime.UtcNow,
             LastModified = DateTime.UtcNow
         };
+
+        var validationResult = validator.Validate(objectToValidate);
+        if (validationResult.IsValid) return objectToValidate;
+        var exception = new PostNotValidException("The Post is not valid");
+        foreach (var error in validationResult.Errors)
+        {
+            exception.ValidationErrors.Add(error.ErrorMessage);
+        }
+
+        throw exception;
     }
 
     //public methods
+    /// <summary>
+    ///  Updates the post text
+    /// </summary>
+    /// <param name="newText">The updated post text</param>
+    /// <exception cref="PostNotValidException">Thrown if new text is null or empty</exception>
     public void UpdatePostText(string newText)
     {
+        if (string.IsNullOrWhiteSpace(newText))
+        {
+            var exception = new PostNotValidException("Cannot update post, new content is empty");
+            exception.ValidationErrors.Add("The provided text is either null or whitespace");
+            throw exception;
+        }
+
         TextContent = newText;
         LastModified = DateTime.UtcNow;
     }

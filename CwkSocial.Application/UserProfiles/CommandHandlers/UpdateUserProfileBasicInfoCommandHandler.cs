@@ -4,6 +4,7 @@ using CwkSocial.Application.Models;
 using CwkSocial.Application.UserProfiles.Commands;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.UserProfileAggregate;
+using CwkSocial.Domain.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,8 @@ public class
                 return result;
             }
 
-            var basicInfo = BasicInfo.TryCreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
+            
+            var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
                 request.Phone, request.DateOfBirth, request.CurrentCity);
 
             userProfile.UpdateBasicInfo(basicInfo);
@@ -46,6 +48,20 @@ public class
             _context.UserProfiles.Update(userProfile);
             await _context.SaveChangesAsync();
             result.Payload = userProfile;
+            return result;
+        }
+        catch (UserProfileNotValidException ex)
+        {
+            result.isError = true;
+            ex.ValidationErrors.ForEach(e =>
+            {
+                var error = new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = $"{ex.Message}",
+                };
+                result.Errors.Add(error);
+            });
             return result;
         }
         catch (Exception e)
