@@ -4,28 +4,35 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace CwkSocial.Api.Filters;
 
-public class ValidateGuidAttribute :ActionFilterAttribute
+public class ValidateGuidAttribute : ActionFilterAttribute
 {
-    private readonly string _key;
+    private readonly List<string> _keys;
 
-    public ValidateGuidAttribute(string key)
+    public ValidateGuidAttribute(params string[] keys)
     {
-        _key = key;
+        _keys = keys.ToList();
     }
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        if (!context.ActionArguments.TryGetValue(_key, out var value)) return;
-        if (Guid.TryParse(value.ToString(), out var guid)) return;
-
-        var apiError = new ErrorResponse
+        bool hasError = false;
+        var apiError = new ErrorResponse();
+        _keys.ForEach(k =>
         {
-            StatusCode = 400,
-            StatusPhrase = "Bad request",
-            Timestamp = DateTime.Now
-        };
-        
-        apiError.Errors.Add($"The identifier for {_key} is not a correct GUID format");
-        context.Result = new ObjectResult(apiError);
+            if (!context.ActionArguments.TryGetValue(k, out var value)) return;
+            if (!Guid.TryParse(value?.ToString(), out var guid))
+            {
+                hasError = true;
+                apiError.Errors.Add($"The identifier for {k} is not a correct GUID format");
+            }
+        });
+
+        if (hasError)
+        {
+            apiError.StatusCode = 400;
+            apiError.StatusPhrase = "Bad request";
+            apiError.Timestamp = DateTime.Now;
+            context.Result = new ObjectResult(apiError);
+        }
     }
 }

@@ -167,4 +167,29 @@ public class PostsController : BaseController
         var comment = _mapper.Map<PostCommentResponse>(result.Payload);
         return Ok(comment);
     }
+
+    [HttpPut]
+    [Route(ApiRoutes.Posts.CommentById)]
+    [ValidateGuid("postId", "commentId")]
+    [ValidateModel]
+    public async Task<IActionResult> UpdateCommentText([FromRoute] string postId, [FromRoute]string commentId,
+        [FromBody] PostCommentUpdate updatedComment)
+    {
+        var command = new UpdatePostCommentCommand
+        {
+            UserProfileId = Guid.Parse(updatedComment.UserProfileId),
+            PostId = Guid.Parse(postId),
+            CommentId = Guid.Parse(commentId),
+            UpdatedText = updatedComment.Text
+        };
+        
+        var result = await _mediator.Send(command);
+        
+        if (result.isError) return HandleErroroResponse(result.Errors);
+            
+        return NoContent();
+    }
+    
+    //TODO Create endpoint for delete post
+    //TODO Create CRUD endpoints for Post Interactions
 }
