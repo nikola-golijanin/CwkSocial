@@ -1,31 +1,33 @@
 ﻿using CwkSocial.Application.Enums;
 using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Queries;
-using CwkSocial.Application.UserProfiles.Queries;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
-using CwkSocial.Domain.Aggregate.UserProfileAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CwkSocial.Application.Posts.QueryHandlers;
 
-public class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery, OperationResult<IEnumerable<Post>>>
+public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery, OperationResult<IEnumerable<PostComment>>>
 {
     private readonly DataContext _context;
 
-    public GetAllPostsQueryHandler(DataContext context)
+    public GetPostCommentsQueryHandler(DataContext context)
     {
         _context = context;
     }
 
-    public async Task<OperationResult<IEnumerable<Post>>> Handle(GetAllPostsQuery request,
+    public async Task<OperationResult<IEnumerable<PostComment>>> Handle(GetPostCommentsQuery request,
         CancellationToken cancellationToken)
     {
-        var result = new OperationResult<IEnumerable<Post>>();
+        var result = new OperationResult<IEnumerable<PostComment>>();
         try
         {
-            result.Payload = await _context.Posts.ToListAsync();
+            var post = await _context.Posts
+                .Include(p => p.Comments)
+                .FirstOrDefaultAsync(p => p.PostId == request.PostId);
+
+            result.Payload = post.Comments;
         }
         catch (Exception e)
         {

@@ -33,7 +33,6 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
             await _context.SaveChangesAsync();
 
             result.Payload = userProfile;
-            return result;
         }
         catch (UserProfileNotValidException ex)
         {
@@ -48,6 +47,13 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
                 result.Errors.Add(error);
             });
         }
+        catch (Exception ex)
+        {
+            result.isError = true;
+            var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
+            result.Errors.Add(error);
+        }
+
         return result;
     }
 }
