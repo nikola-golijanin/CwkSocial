@@ -28,7 +28,7 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
 
             if (post is null)
             {
-                result.isError = true;
+                result.IsError = true;
                 var error = new Error
                     { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
                 result.Errors.Add(error);
@@ -43,7 +43,7 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
         catch (Exception e)
         {
             var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.isError = true;
+            result.IsError = true;
             result.Errors.Add(error);
         }
         

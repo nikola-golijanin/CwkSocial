@@ -28,7 +28,7 @@ public class DeleteUserProfileCommandHandler : IRequestHandler<DeleteUserProfile
 
             if (userProfile is null)
             {
-                result.isError = true;
+                result.IsError = true;
                 var error = new Error
                     { Code = ErrorCode.NotFound, Message = $"No UserProfile with ID {request.UserProfileId}" };
                 result.Errors.Add(error);
@@ -43,7 +43,7 @@ public class DeleteUserProfileCommandHandler : IRequestHandler<DeleteUserProfile
         catch (Exception e)
         {
             var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.isError = true;
+            result.IsError = true;
             result.Errors.Add(error);
         }
 

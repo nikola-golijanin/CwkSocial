@@ -31,7 +31,7 @@ public class UpdatePostCommentCommandHandler
             
             if (post is null)
             {
-                result.isError = true;
+                result.IsError = true;
                 var error = new Error
                     { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
                 result.Errors.Add(error);
@@ -43,7 +43,7 @@ public class UpdatePostCommentCommandHandler
             
             if (comment is null)
             {
-                result.isError = true;
+                result.IsError = true;
                 var error = new Error
                     { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
                 result.Errors.Add(error);
@@ -60,7 +60,7 @@ public class UpdatePostCommentCommandHandler
         }
         catch (Exception ex)
         {
-            result.isError = true;
+            result.IsError = true;
             var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
             result.Errors.Add(error);
         }

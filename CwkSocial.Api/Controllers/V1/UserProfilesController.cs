@@ -39,7 +39,7 @@ public class UserProfilesController : BaseController
         var command = _mapper.Map<CreateUserCommand>(profile);
         var result = await _mediator.Send(command);
         
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -58,7 +58,7 @@ public class UserProfilesController : BaseController
         var query = new GetUserProfileByIdQuery { UserProfileId = Guid.Parse(id) };
         var result = await _mediator.Send(query);
 
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -77,7 +77,7 @@ public class UserProfilesController : BaseController
         command.UserProfileId = Guid.Parse(id);
         var result = await _mediator.Send(command);
 
-        return result.isError
+        return result.IsError
             ? HandleErroroResponse(result.Errors)
             : NoContent();
     }
@@ -90,7 +90,7 @@ public class UserProfilesController : BaseController
         var command = new DeleteUserProfileCommand { UserProfileId = Guid.Parse(id) };
         var result = await _mediator.Send(command);
 
-        return result.isError
+        return result.IsError
             ? HandleErroroResponse(result.Errors)
             : NoContent();
     }

@@ -36,7 +36,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
         }
         catch (UserProfileNotValidException ex)
         {
-            result.isError = true;
+            result.IsError = true;
             ex.ValidationErrors.ForEach(e =>
             {
                 var error = new Error
@@ -49,7 +49,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
         }
         catch (Exception ex)
         {
-            result.isError = true;
+            result.IsError = true;
             var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
             result.Errors.Add(error);
         }

@@ -41,7 +41,7 @@ public class PostsController : BaseController
         var query = new GetPostByIdQuery() { PostId = Guid.Parse(id) };
         var result = await _mediator.Send(query);
 
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -63,7 +63,7 @@ public class PostsController : BaseController
 
         var result = await _mediator.Send(command);
 
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -88,7 +88,7 @@ public class PostsController : BaseController
 
         var result = await _mediator.Send(command);
 
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -105,7 +105,7 @@ public class PostsController : BaseController
             { PostId = Guid.Parse(id) };
         var result = await _mediator.Send(command);
 
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -121,7 +121,7 @@ public class PostsController : BaseController
         var query = new GetPostCommentsQuery { PostId = Guid.Parse(postId) };
         var result = await _mediator.Send(query);
 
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -159,7 +159,7 @@ public class PostsController : BaseController
         };
 
         var result = await _mediator.Send(command);
-        if (result.isError)
+        if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
@@ -185,11 +185,10 @@ public class PostsController : BaseController
         
         var result = await _mediator.Send(command);
         
-        if (result.isError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErroroResponse(result.Errors);
             
         return NoContent();
     }
     
-    //TODO Create endpoint for delete post
     //TODO Create CRUD endpoints for Post Interactions
 }

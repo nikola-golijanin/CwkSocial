@@ -30,7 +30,7 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Opera
         }
         catch (PostNotValidException ex)
         {
-            result.isError = true;
+            result.IsError = true;
             ex.ValidationErrors.ForEach(e =>
             {
                 var error = new Error
@@ -43,7 +43,7 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Opera
         }
         catch (Exception ex)
         {
-            result.isError = true;
+            result.IsError = true;
             var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
             result.Errors.Add(error);
         }

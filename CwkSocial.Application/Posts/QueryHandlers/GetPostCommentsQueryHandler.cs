@@ -32,7 +32,7 @@ public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery,
         catch (Exception e)
         {
             var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.isError = true;
+            result.IsError = true;
             result.Errors.Add(error);
         }
 
