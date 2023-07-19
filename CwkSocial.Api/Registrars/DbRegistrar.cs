@@ -11,7 +11,15 @@ public class DbRegistrar : IWebApplicationBuilderRegistrar
         var connectionString = builder.Configuration.GetConnectionString("Default");
         builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
 
-        builder.Services.AddIdentityCore<IdentityUser>()
+        builder.Services.AddIdentityCore<IdentityUser>(
+                options =>
+                {
+                    options.Password.RequireDigit = false;
+                    options.Password.RequiredLength = 0;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                })
             .AddEntityFrameworkStores<DataContext>();
     }
 }

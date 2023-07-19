@@ -10,11 +10,11 @@ public class IdentityRegistrar : IWebApplicationBuilderRegistrar
     public void RegisterServices(WebApplicationBuilder builder)
     {
         var jwtSettings = new JwtSettings();
-        builder.Configuration.Bind(nameof(JwtSettings),
-            jwtSettings);
+        builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
 
         var jwtSection = builder.Configuration.GetSection(nameof(JwtSettings));
         builder.Services.Configure<JwtSettings>(jwtSection);
+
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

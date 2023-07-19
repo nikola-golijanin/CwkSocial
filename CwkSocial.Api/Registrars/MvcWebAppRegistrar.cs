@@ -7,6 +7,7 @@ public class MvcWebAppRegistrar : IWebApplicationRegistrar
     public void RegisterPipelineComponents(WebApplication app)
     {
         app.UseSwagger();
+        
         app.UseSwaggerUI(options =>
         {
             var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
@@ -18,7 +19,9 @@ public class MvcWebAppRegistrar : IWebApplicationRegistrar
         });
         
         app.UseHttpsRedirection();
-
+        
+        app.UseAuthentication();
+        
         app.UseAuthorization();
 
         app.MapControllers();

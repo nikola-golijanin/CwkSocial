@@ -5,6 +5,7 @@ using CwkSocial.Api.Filters;
 using CwkSocial.Application.UserProfiles.Commands;
 using CwkSocial.Application.UserProfiles.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CwkSocial.Api.Controllers.V1;
@@ -12,6 +13,7 @@ namespace CwkSocial.Api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route(ApiRoutes.BaseRoute)]
 [ApiController]
+[Authorize]
 public class UserProfilesController : BaseController
 {
     private readonly IMediator _mediator;
@@ -38,12 +40,12 @@ public class UserProfilesController : BaseController
     {
         var command = _mapper.Map<CreateUserCommand>(profile);
         var result = await _mediator.Send(command);
-        
+
         if (result.IsError)
         {
             return HandleErroroResponse(result.Errors);
         }
-        
+
         var userProfile = _mapper.Map<UserProfileResponse>(result.Payload);
 
         return CreatedAtAction(nameof(GetUserProfileById),

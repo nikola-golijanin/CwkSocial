@@ -27,7 +27,11 @@ public class BaseController : ControllerBase
         apiError.StatusCode = 500;
         apiError.StatusPhrase = "Internal server error";
         apiError.Timestamp = DateTime.Now;
-        apiError.Errors.Add("Unknown error");
+        errors.ForEach(e =>
+        {
+            apiError.Errors.Add(e.Message);
+            
+        });
         return StatusCode(500, apiError);
     }
 }
