@@ -15,7 +15,6 @@ public class UserProfile
     //Factory method
     public static UserProfile CreateUserProfile(string identityId, BasicInfo basicInfo)
     {
-        //TODO: add validation, error handling strategies, error notification strategies
         return new UserProfile
         {
             IdentityId = identityId,

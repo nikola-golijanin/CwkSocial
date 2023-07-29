@@ -1,17 +1,15 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using CwkSocial.Application.Enums;
 using CwkSocial.Application.Identity.Commands;
 using CwkSocial.Application.Models;
-using CwkSocial.Application.Options;
+using CwkSocial.Application.Services;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.UserProfileAggregate;
 using CwkSocial.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CwkSocial.Application.Identity.CommandHandlers;
 
@@ -19,14 +17,15 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
 {
     private readonly DataContext _context;
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly JwtSettings _jwtSettings;
+    private readonly IdentityService _identityService;
+
 
     public RegisterIdentityCommandHandler(DataContext context, UserManager<IdentityUser> userManager,
-        IOptions<JwtSettings> jwtSettings)
+        IdentityService identityService)
     {
         _context = context;
         _userManager = userManager;
-        _jwtSettings = jwtSettings.Value;
+        _identityService = identityService;
     }
 
 
@@ -36,100 +35,128 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
         var result = new OperationResult<string>();
         try
         {
-            var existingIdentity = await _userManager.FindByEmailAsync(request.Username);
-
-            if (existingIdentity != null)
-            {
-                result.IsError = true;
-                var error = new Error { Code = ErrorCode.IdentityUserAlredyExists, 
-                    Message = $"Provided email address already exists. Cannot register new user"};
-                result.Errors.Add(error);
-                return result;
-            }
-
-            var identity = new IdentityUser
-            {
-                Email = request.Username,
-                UserName = request.Username
-            };
+            var identityUserDoesNotExist = await CheckIfIdentityUserDoesNotExist(result, request);
+            if (!identityUserDoesNotExist) return result;
 
             //creating transaction
-            using var transaction = _context.Database.BeginTransaction();
-            var createdIdentity = await _userManager.CreateAsync(identity, request.Password);
-            if (!createdIdentity.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                result.IsError = true;
+            await using var transaction = _context.Database.BeginTransaction();
 
-                foreach (var identityError in createdIdentity.Errors)
-                {
-                    var error = new Error { Code = ErrorCode.IdentityCreationFailed, 
-                        Message = identityError.Description};
-                    result.Errors.Add(error);
-                }
-                return result;
-            }
-            
-            var profileInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.Username,
-                request.Phone, request.DateOfBirth, request.CurrentCity);
+            var identity = await CreateIdentityUserAsync(result, request, transaction);
+            if (identity is null) return result;
 
-            var profile = UserProfile.CreateUserProfile(identity.Id, profileInfo);
-            try
-            {
-                _context.UserProfiles.Add(profile);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch (Exception e)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-            
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_jwtSettings.SigningKey);
-            
-            var tokenDescriptor = new SecurityTokenDescriptor()
-            {
-                Subject = new ClaimsIdentity( new Claim[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, identity.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, identity.Email),
-                    new Claim("IdentityId", identity.Id),
-                    new Claim("UserProfileId", profile.UserProfileId.ToString())
-                }),
-                Expires = DateTime.Now.AddHours(2),
-                Audience = _jwtSettings.Audiences[0],
-                Issuer = _jwtSettings.Issuer,
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
-            };
+            var userProfile = await CreateUserProfileAsync(result, request, transaction, identity);
+            await transaction.CommitAsync();
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            result.Payload = tokenHandler.WriteToken(token);
+            var claimsIdentity = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, identity.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, identity.Email),
+                new Claim("IdentityId", identity.Id),
+                new Claim("UserProfileId", userProfile.UserProfileId.ToString())
+            });
+
+            var token = _identityService.CreateSecurityToken(claimsIdentity);
+            result.Payload = _identityService.WriteToken(token);
             return result;
         }
-        
         catch (UserProfileNotValidException ex)
         {
             result.IsError = true;
             ex.ValidationErrors.ForEach(e =>
             {
-                var error = new Error { Code = ErrorCode.ValidationError, 
-                    Message = $"{ex.Message}"};
+                var error = new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = $"{e}"
+                };
                 result.Errors.Add(error);
             });
         }
-        
         catch (Exception e)
         {
-            var error = new Error { Code = ErrorCode.UnknownError, 
-                Message = $"{e.Message}"};
+            var error = new Error
+            {
+                Code = ErrorCode.UnknownError,
+                Message = $"{e.Message}"
+            };
             result.IsError = true;
             result.Errors.Add(error);
         }
 
         return result;
+    }
+
+
+    private async Task<bool> CheckIfIdentityUserDoesNotExist(OperationResult<string> result,
+        RegisterIdentityCommand request)
+    {
+        var existingIdentity = await _userManager.FindByEmailAsync(request.Username);
+
+        if (existingIdentity != null)
+        {
+            result.IsError = true;
+            var error = new Error
+            {
+                Code = ErrorCode.IdentityUserAlredyExists,
+                Message = $"Provided email address already exists. Cannot register new user"
+            };
+            result.Errors.Add(error);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<IdentityUser> CreateIdentityUserAsync(OperationResult<string> result,
+        RegisterIdentityCommand request, IDbContextTransaction transaction)
+    {
+        var identity = new IdentityUser
+        {
+            Email = request.Username,
+            UserName = request.Username
+        };
+
+        var identityCreatedResult = await _userManager.CreateAsync(identity, request.Password);
+
+        if (identityCreatedResult.Succeeded)
+        {
+            return identity;
+        }
+
+        await transaction.RollbackAsync();
+        result.IsError = true;
+
+        foreach (var identityCreatedError in identityCreatedResult.Errors)
+        {
+            var error = new Error
+            {
+                Code = ErrorCode.IdentityCreationFailed,
+                Message = identityCreatedError.Description
+            };
+            result.Errors.Add(error);
+        }
+
+        return null;
+    }
+
+    private async Task<UserProfile> CreateUserProfileAsync(OperationResult<string> result,
+        RegisterIdentityCommand request, IDbContextTransaction transaction, IdentityUser identity)
+    {
+        try
+        {
+            var profileInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.Username,
+                request.Phone, request.DateOfBirth, request.CurrentCity);
+
+            var userProfile = UserProfile.CreateUserProfile(identity.Id, profileInfo);
+            _context.UserProfiles.Add(userProfile);
+            await _context.SaveChangesAsync();
+            return userProfile;
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

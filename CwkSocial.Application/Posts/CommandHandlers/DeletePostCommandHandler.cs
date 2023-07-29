@@ -3,7 +3,6 @@ using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Commands;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
-using CwkSocial.Domain.Aggregate.UserProfileAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

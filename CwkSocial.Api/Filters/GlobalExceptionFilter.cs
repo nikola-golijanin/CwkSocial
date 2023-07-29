@@ -1,5 +1,4 @@
-﻿using System.Net;
-using CwkSocial.Api.Contracts.Common;
+﻿using CwkSocial.Api.Contracts.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

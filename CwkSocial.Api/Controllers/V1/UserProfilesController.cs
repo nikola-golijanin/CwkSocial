@@ -5,6 +5,7 @@ using CwkSocial.Api.Filters;
 using CwkSocial.Application.UserProfiles.Commands;
 using CwkSocial.Application.UserProfiles.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,7 @@ namespace CwkSocial.Api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route(ApiRoutes.BaseRoute)]
 [ApiController]
-[Authorize]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UserProfilesController : BaseController
 {
     private readonly IMediator _mediator;
@@ -25,6 +26,7 @@ public class UserProfilesController : BaseController
         _mapper = mapper;
     }
 
+    //TODO provide cancelation token everywhere
     [HttpGet]
     public async Task<IActionResult> GetAllProfiles()
     {

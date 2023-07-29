@@ -7,5 +7,7 @@ public enum ErrorCode
     ValidationError = 101,
     UnknownError = 999,
     IdentityUserAlredyExists = 201,
-    IdentityCreationFailed = 202
+    IdewntityUserDoesNotExist = 202,
+    IncorrectPassword = 203,
+    IdentityCreationFailed = 204
 }

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CwkSocial.Application.Enums;
+﻿using CwkSocial.Application.Enums;
 using CwkSocial.Application.Models;
 using CwkSocial.Application.UserProfiles.Commands;
 using CwkSocial.DataAccess;
@@ -42,7 +41,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Opera
                 var error = new Error
                 {
                     Code = ErrorCode.ValidationError,
-                    Message = $"{ex.Message}",
+                    Message = $"{e}",
                 };
                 result.Errors.Add(error);
             });

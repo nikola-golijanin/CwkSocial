@@ -29,7 +29,25 @@ public class IdentityController : BaseController
         var command = _mapper.Map<RegisterIdentityCommand>(registration);
         var result = await _mediator.Send(command);
 
-         if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErroroResponse(result.Errors);
+
+        var authResult = new AuthenticationResult
+        {
+            Token = result.Payload
+        };
+
+        return Ok(authResult);
+    }
+
+    [HttpPost]
+    [Route(ApiRoutes.Identity.Login)]
+    [ValidateModel]
+    public async Task<IActionResult> Login(Login login)
+    {
+        var command = _mapper.Map<LoginCommand>(login);
+        var result = await _mediator.Send(command);
+
+        if (result.IsError) return HandleErroroResponse(result.Errors);
 
         var authResult = new AuthenticationResult
         {

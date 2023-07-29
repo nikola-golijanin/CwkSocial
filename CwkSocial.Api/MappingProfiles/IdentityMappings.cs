@@ -9,5 +9,6 @@ public class IdentityMappings : Profile
     public IdentityMappings()
     {
         CreateMap<UserRegistration, RegisterIdentityCommand>();
+        CreateMap<Login, LoginCommand>();
     }
 }

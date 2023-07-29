@@ -1,10 +1,8 @@
 ﻿using CwkSocial.Application.Enums;
 using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Queries;
-using CwkSocial.Application.UserProfiles.Queries;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
-using CwkSocial.Domain.Aggregate.UserProfileAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
