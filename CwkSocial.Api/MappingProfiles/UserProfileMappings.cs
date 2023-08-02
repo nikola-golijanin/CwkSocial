@@ -10,10 +10,8 @@ public class UserProfileMappings : Profile
 {
     public UserProfileMappings()
     {
-        CreateMap<UserProfileCreateOrUpdate, CreateUserCommand>();
         CreateMap<UserProfile, UserProfileResponse>();
         CreateMap<BasicInfo, BasicInformation>();
         CreateMap<UserProfileCreateOrUpdate, UpdateUserProfileBasicInfoCommand>();
-
     }
 }

@@ -6,8 +6,8 @@ public enum ErrorCode
     InternalServerError = 500,
     ValidationError = 101,
     UnknownError = 999,
-    IdentityUserAlredyExists = 201,
-    IdewntityUserDoesNotExist = 202,
+    IdentityUserAlreadyExists = 201,
+    IdentityUserDoesNotExist = 202,
     IncorrectPassword = 203,
-    IdentityCreationFailed = 204
+    IdentityCreationFailed = 204,
 }

@@ -41,23 +41,13 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
             //creating transaction
             await using var transaction = _context.Database.BeginTransaction();
 
-            var identity = await CreateIdentityUserAsync(result, request, transaction);
-            if (identity is null) return result;
+            var identityUser = await CreateIdentityUserAsync(result, request, transaction);
+            if (identityUser is null) return result;
 
-            var userProfile = await CreateUserProfileAsync(result, request, transaction, identity);
+            var userProfile = await CreateUserProfileAsync(result, request, transaction, identityUser);
             await transaction.CommitAsync();
 
-            var claimsIdentity = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, identity.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, identity.Email),
-                new Claim("IdentityId", identity.Id),
-                new Claim("UserProfileId", userProfile.UserProfileId.ToString())
-            });
-
-            var token = _identityService.CreateSecurityToken(claimsIdentity);
-            result.Payload = _identityService.WriteToken(token);
+            result.Payload = GetJwtString(identityUser, userProfile);
             return result;
         }
         catch (UserProfileNotValidException ex)
@@ -98,7 +88,7 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
             result.IsError = true;
             var error = new Error
             {
-                Code = ErrorCode.IdentityUserAlredyExists,
+                Code = ErrorCode.IdentityUserAlreadyExists,
                 Message = $"Provided email address already exists. Cannot register new user"
             };
             result.Errors.Add(error);
@@ -119,14 +109,10 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
 
         var identityCreatedResult = await _userManager.CreateAsync(identity, request.Password);
 
-        if (identityCreatedResult.Succeeded)
-        {
-            return identity;
-        }
+        if (identityCreatedResult.Succeeded) return identity;
 
         await transaction.RollbackAsync();
         result.IsError = true;
-
         foreach (var identityCreatedError in identityCreatedResult.Errors)
         {
             var error = new Error
@@ -158,5 +144,20 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    private string GetJwtString(IdentityUser identityUser, UserProfile userProfile)
+    {
+        var claimsIdentity = new ClaimsIdentity(new Claim[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, identityUser.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, identityUser.Email),
+            new Claim("IdentityId", identityUser.Id),
+            new Claim("UserProfileId", userProfile.UserProfileId.ToString())
+        });
+
+        var token = _identityService.CreateSecurityToken(claimsIdentity);
+        return _identityService.WriteToken(token);
     }
 }

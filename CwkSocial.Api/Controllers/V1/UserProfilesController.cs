@@ -36,24 +36,6 @@ public class UserProfilesController : BaseController
         return Ok(profiles);
     }
 
-    [HttpPost]
-    [ValidateModel]
-    public async Task<IActionResult> CreateUserProfile([FromBody] UserProfileCreateOrUpdate profile)
-    {
-        var command = _mapper.Map<CreateUserCommand>(profile);
-        var result = await _mediator.Send(command);
-
-        if (result.IsError)
-        {
-            return HandleErroroResponse(result.Errors);
-        }
-
-        var userProfile = _mapper.Map<UserProfileResponse>(result.Payload);
-
-        return CreatedAtAction(nameof(GetUserProfileById),
-            new { id = userProfile.UserProfileId }, userProfile);
-    }
-
     [HttpGet]
     [Route(ApiRoutes.UserProfiles.IdRoute)]
     [ValidateGuid("id")]
@@ -86,6 +68,8 @@ public class UserProfilesController : BaseController
             : NoContent();
     }
 
+    
+    //TODO move to identity controller, when identity is deleted then should user profile be deleted
     [HttpDelete]
     [Route(ApiRoutes.UserProfiles.IdRoute)]
     [ValidateGuid("id")]

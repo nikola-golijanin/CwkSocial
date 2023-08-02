@@ -2,10 +2,13 @@
 using CwkSocial.Api.Contracts.Common;
 using CwkSocial.Api.Contracts.Posts.Requests;
 using CwkSocial.Api.Contracts.Posts.Responses;
+using CwkSocial.Api.Extensions;
 using CwkSocial.Api.Filters;
 using CwkSocial.Application.Posts.Commands;
 using CwkSocial.Application.Posts.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CwkSocial.Api.Controllers.V1;
@@ -13,6 +16,7 @@ namespace CwkSocial.Api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route(ApiRoutes.BaseRoute)]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class PostsController : BaseController
 {
     private readonly IMediator _mediator;
@@ -55,9 +59,11 @@ public class PostsController : BaseController
     [ValidateModel]
     public async Task<IActionResult> CreatePost([FromBody] PostCreate newPost)
     {
+        var userProfileId = HttpContext.GetUserProfileId();
+        
         var command = new CreatePostCommand
         {
-            UserProfileId = Guid.Parse(newPost.UserProfileId),
+            UserProfileId = userProfileId,
             TextContent = newPost.TextContent
         };
 
