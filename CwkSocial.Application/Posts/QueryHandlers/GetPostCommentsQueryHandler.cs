@@ -31,9 +31,7 @@ public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery,
         }
         catch (Exception e)
         {
-            var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.IsError = true;
-            result.Errors.Add(error);
+            result.AddUnknownError(e.Message);
         }
 
         return result;

@@ -27,19 +27,14 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
 
             if (post is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound, 
+                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
                 return result;
             }
 
              if(post.UserProfileId != request.UserProfileId)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.PostDeleteNotPossible, Message = $"Only owner can delete post" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.PostDeleteNotPossible, PostsErrorMessages.PostDeleteNotPossible);
                 return result;
             }
 
@@ -50,9 +45,7 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
         }
         catch (Exception e)
         {
-            var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.IsError = true;
-            result.Errors.Add(error);
+           result.AddUnknownError(e.Message);
         }
         
         return result;

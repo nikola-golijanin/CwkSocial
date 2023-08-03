@@ -35,14 +35,14 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
         var result = new OperationResult<string>();
         try
         {
-            var identityUserDoesNotExist = await CheckIfIdentityUserDoesNotExist(result, request);
-            if (!identityUserDoesNotExist) return result;
+            await CheckIfIdentityUserDoesNotExist(result, request);
+            if (request.IsError) return result;
 
             //creating transaction
             await using var transaction = _context.Database.BeginTransaction();
 
             var identityUser = await CreateIdentityUserAsync(result, request, transaction);
-            if (identityUser is null) return result;
+            if (result.IsError) return result;
 
             var userProfile = await CreateUserProfileAsync(result, request, transaction, identityUser);
             await transaction.CommitAsync();
@@ -52,50 +52,24 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
         }
         catch (UserProfileNotValidException ex)
         {
-            result.IsError = true;
-            ex.ValidationErrors.ForEach(e =>
-            {
-                var error = new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = $"{e}"
-                };
-                result.Errors.Add(error);
-            });
+            ex.ValidationErrors.ForEach(e => result.AddError(ErrorCode.ValidationError,e));
         }
         catch (Exception e)
         {
-            var error = new Error
-            {
-                Code = ErrorCode.UnknownError,
-                Message = $"{e.Message}"
-            };
-            result.IsError = true;
-            result.Errors.Add(error);
+            result.AddUnknownError(e.Message);
         }
 
         return result;
     }
 
 
-    private async Task<bool> CheckIfIdentityUserDoesNotExist(OperationResult<string> result,
+    private async Task CheckIfIdentityUserDoesNotExist(OperationResult<string> result,
         RegisterIdentityCommand request)
     {
         var existingIdentity = await _userManager.FindByEmailAsync(request.Username);
 
         if (existingIdentity != null)
-        {
-            result.IsError = true;
-            var error = new Error
-            {
-                Code = ErrorCode.IdentityUserAlreadyExists,
-                Message = $"Provided email address already exists. Cannot register new user"
-            };
-            result.Errors.Add(error);
-            return false;
-        }
-
-        return true;
+            result.AddError(ErrorCode.IdentityUserAlreadyExists,IdentityErrorMessages.IdentityUserAlreadyExists);
     }
 
     private async Task<IdentityUser> CreateIdentityUserAsync(OperationResult<string> result,
@@ -109,21 +83,17 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
 
         var identityCreatedResult = await _userManager.CreateAsync(identity, request.Password);
 
-        if (identityCreatedResult.Succeeded) return identity;
-
-        await transaction.RollbackAsync();
-        result.IsError = true;
-        foreach (var identityCreatedError in identityCreatedResult.Errors)
+        if (!identityCreatedResult.Succeeded)
         {
-            var error = new Error
+            await transaction.RollbackAsync();
+
+            foreach (var identityCreatedError in identityCreatedResult.Errors)
             {
-                Code = ErrorCode.IdentityCreationFailed,
-                Message = identityCreatedError.Description
-            };
-            result.Errors.Add(error);
+                result.AddError(ErrorCode.IdentityCreationFailed,identityCreatedError.Description);
+            }
         }
 
-        return null;
+        return identity;
     }
 
     private async Task<UserProfile> CreateUserProfileAsync(OperationResult<string> result,

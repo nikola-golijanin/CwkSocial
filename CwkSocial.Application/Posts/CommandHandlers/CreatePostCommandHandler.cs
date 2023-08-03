@@ -30,22 +30,11 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Opera
         }
         catch (PostNotValidException ex)
         {
-            result.IsError = true;
-            ex.ValidationErrors.ForEach(e =>
-            {
-                var error = new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = $"{e}",
-                };
-                result.Errors.Add(error);
-            });
+            ex.ValidationErrors.ForEach(er => result.AddError(ErrorCode.ValidationError, er));
         }
         catch (Exception ex)
         {
-            result.IsError = true;
-            var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
-            result.Errors.Add(error);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

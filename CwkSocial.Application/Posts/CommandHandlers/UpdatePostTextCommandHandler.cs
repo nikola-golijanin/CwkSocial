@@ -29,19 +29,14 @@ public class UpdatePostTextCommandHandler : IRequestHandler<UpdatePostTextComman
 
             if (post is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound, 
+                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
                 return result;
             }
 
             if(post.UserProfileId != request.UserProfileId)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.PostUpdateNotPossible, Message = $"Post update not possible because its not post owner that wants to update" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.PostUpdateNotPossible, PostsErrorMessages.PostUpdateNotPossible);
                 return result;
             }
 
@@ -52,22 +47,11 @@ public class UpdatePostTextCommandHandler : IRequestHandler<UpdatePostTextComman
         }
         catch (PostNotValidException ex)
         {
-            result.IsError = true;
-            ex.ValidationErrors.ForEach(e =>
-            {
-                var error = new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = $"{e}",
-                };
-                result.Errors.Add(error);
-            });
+            ex.ValidationErrors.ForEach(er => result.AddError(ErrorCode.ValidationError, er));
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.IsError = true;
-            result.Errors.Add(error);
+            result.AddError(ErrorCode.UnknownError, ex.Message);
         }
 
         return result;

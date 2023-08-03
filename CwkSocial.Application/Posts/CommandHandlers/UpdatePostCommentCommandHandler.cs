@@ -31,10 +31,8 @@ public class UpdatePostCommentCommandHandler
             
             if (post is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound, 
+                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
                 return result;
             }
             
@@ -43,10 +41,8 @@ public class UpdatePostCommentCommandHandler
             
             if (comment is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound, 
+                    string.Format(PostsErrorMessages.CommentNotFound, request.CommentId));
                 return result;
             }
             
@@ -60,9 +56,7 @@ public class UpdatePostCommentCommandHandler
         }
         catch (Exception ex)
         {
-            result.IsError = true;
-            var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
-            result.Errors.Add(error);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

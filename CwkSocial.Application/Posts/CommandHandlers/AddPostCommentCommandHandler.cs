@@ -29,10 +29,8 @@ public class AddPostCommentCommandHandler : IRequestHandler<AddPostCommentComman
 
             if (post is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound,
+                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
                 return result;
             }
 
@@ -47,22 +45,11 @@ public class AddPostCommentCommandHandler : IRequestHandler<AddPostCommentComman
         }
         catch (PostCommentNotValidException ex)
         {
-            result.IsError = true;
-            ex.ValidationErrors.ForEach(e =>
-            {
-                var error = new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = $"{e}",
-                };
-                result.Errors.Add(error);
-            });
+            ex.ValidationErrors.ForEach(er => result.AddError(ErrorCode.ValidationError, er));
         }
         catch (Exception ex)
         {
-            result.IsError = true;
-            var error = new Error { Code = ErrorCode.UnknownError, Message = ex.Message };
-            result.Errors.Add(error);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;
