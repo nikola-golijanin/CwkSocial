@@ -36,7 +36,7 @@ public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Opera
                 var error = new Error
                 {
                     Code = ErrorCode.ValidationError,
-                    Message = $"{ex.Message}",
+                    Message = $"{e}",
                 };
                 result.Errors.Add(error);
             });

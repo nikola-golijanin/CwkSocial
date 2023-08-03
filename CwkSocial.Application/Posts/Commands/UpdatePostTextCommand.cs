@@ -6,6 +6,7 @@ namespace CwkSocial.Application.Posts.Commands;
 
 public class UpdatePostTextCommand : IRequest<OperationResult<Post>>
 {
-    public Guid PostId { get; set; }
+    public Guid PostId { get; set; }   
+    public Guid UserProfileId {get;set;}
     public string TextContent { get; set; }
 }

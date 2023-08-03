@@ -55,7 +55,7 @@ public class
                 var error = new Error
                 {
                     Code = ErrorCode.ValidationError,
-                    Message = $"{ex.Message}",
+                    Message = $"{e}",
                 };
                 result.Errors.Add(error);
             });

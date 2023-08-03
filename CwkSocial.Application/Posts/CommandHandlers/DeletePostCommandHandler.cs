@@ -34,6 +34,15 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
                 return result;
             }
 
+             if(post.UserProfileId != request.UserProfileId)
+            {
+                result.IsError = true;
+                var error = new Error
+                    { Code = ErrorCode.PostDeleteNotPossible, Message = $"Only owner can delete post" };
+                result.Errors.Add(error);
+                return result;
+            }
+
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
 

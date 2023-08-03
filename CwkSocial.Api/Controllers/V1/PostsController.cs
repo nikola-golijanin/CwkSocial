@@ -84,10 +84,13 @@ public class PostsController : BaseController
     [Route(ApiRoutes.Posts.IdRoute)]
     [ValidateModel]
     [ValidateGuid("id")]
-    public async Task<IActionResult> UpdatePost([FromRoute] string id, [FromBody] PostUpdate post)
+    public async Task<IActionResult> UpdatePostText([FromRoute] string id, [FromBody] PostUpdate post)
     {
+        var userProfileId = HttpContext.GetUserProfileId();
+
         var command = new UpdatePostTextCommand
         {
+            UserProfileId = userProfileId,
             PostId = Guid.Parse(id),
             TextContent = post.TextContent
         };
@@ -107,8 +110,13 @@ public class PostsController : BaseController
     [ValidateGuid("id")]
     public async Task<IActionResult> DeletePost(string id)
     {
+        var userProfileId = HttpContext.GetUserProfileId();
+
         var command = new DeletePostCommand
-            { PostId = Guid.Parse(id) };
+            { 
+                PostId = Guid.Parse(id),
+                UserProfileId = userProfileId
+            };
         var result = await _mediator.Send(command);
 
         if (result.IsError)

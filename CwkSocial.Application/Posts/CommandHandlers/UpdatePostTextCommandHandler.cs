@@ -36,6 +36,15 @@ public class UpdatePostTextCommandHandler : IRequestHandler<UpdatePostTextComman
                 return result;
             }
 
+            if(post.UserProfileId != request.UserProfileId)
+            {
+                result.IsError = true;
+                var error = new Error
+                    { Code = ErrorCode.PostUpdateNotPossible, Message = $"Post update not possible because its not post owner that wants to update" };
+                result.Errors.Add(error);
+                return result;
+            }
+
             post.UpdatePostText(request.TextContent);
             _context.Posts.Update(post);
             await _context.SaveChangesAsync();
@@ -49,7 +58,7 @@ public class UpdatePostTextCommandHandler : IRequestHandler<UpdatePostTextComman
                 var error = new Error
                 {
                     Code = ErrorCode.ValidationError,
-                    Message = $"{ex.Message}",
+                    Message = $"{e}",
                 };
                 result.Errors.Add(error);
             });

@@ -24,14 +24,14 @@ public class BaseController : ControllerBase
             return NotFound(apiError);
         }
 
-        apiError.StatusCode = 500;
-        apiError.StatusPhrase = "Internal server error";
+        apiError.StatusCode = 400;
+        apiError.StatusPhrase = "Bad request";
         apiError.Timestamp = DateTime.Now;
         errors.ForEach(e =>
         {
             apiError.Errors.Add(e.Message);
             
         });
-        return StatusCode(500, apiError);
+        return StatusCode(400, apiError);
     }
 }
