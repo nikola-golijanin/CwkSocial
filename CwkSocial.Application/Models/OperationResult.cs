@@ -1,4 +1,6 @@
-﻿namespace CwkSocial.Application.Models;
+﻿using CwkSocial.Application.Enums;
+
+namespace CwkSocial.Application.Models;
 
 public class OperationResult<T>
 {

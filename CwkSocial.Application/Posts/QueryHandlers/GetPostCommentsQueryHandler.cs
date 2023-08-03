@@ -1,5 +1,4 @@
-﻿using CwkSocial.Application.Enums;
-using CwkSocial.Application.Models;
+﻿using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Queries;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
@@ -8,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CwkSocial.Application.Posts.QueryHandlers;
 
-public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery, OperationResult<IEnumerable<PostComment>>>
+public class
+    GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery, OperationResult<IEnumerable<PostComment>>>
 {
     private readonly DataContext _context;
 
@@ -29,9 +29,9 @@ public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery,
 
             result.Payload = post.Comments;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            result.AddUnknownError(e.Message);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

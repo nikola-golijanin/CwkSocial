@@ -41,9 +41,9 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, OperationResult
             result.Payload = GetJwtString(identityUser, userProfile);
             return result;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            result.AddError(ErrorCode.UnknownError,e.Message);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;
@@ -55,13 +55,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, OperationResult
         var identityUser = await _userManager.FindByEmailAsync(request.Username);
 
         if (identityUser is null)
-            result.AddError(ErrorCode.IdentityUserDoesNotExist,IdentityErrorMessages.NonExistentIdentityUser)
+            result.AddError(ErrorCode.IdentityUserDoesNotExist, IdentityErrorMessages.NonExistentIdentityUser);
 
         var validPassword = await _userManager.CheckPasswordAsync(identityUser, request.Password);
 
         if (!validPassword)
-            result.AddError(ErrorCode.IncorrectPassword,IdentityErrorMessages.IncorrectPassword)
-        
+            result.AddError(ErrorCode.IncorrectPassword, IdentityErrorMessages.IncorrectPassword);
+
         return identityUser;
     }
 

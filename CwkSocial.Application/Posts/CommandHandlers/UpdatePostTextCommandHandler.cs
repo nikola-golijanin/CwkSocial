@@ -29,12 +29,12 @@ public class UpdatePostTextCommandHandler : IRequestHandler<UpdatePostTextComman
 
             if (post is null)
             {
-                result.AddError(ErrorCode.NotFound, 
+                result.AddError(ErrorCode.NotFound,
                     string.Format(PostsErrorMessages.PostNotFound, request.PostId));
                 return result;
             }
 
-            if(post.UserProfileId != request.UserProfileId)
+            if (post.UserProfileId != request.UserProfileId)
             {
                 result.AddError(ErrorCode.PostUpdateNotPossible, PostsErrorMessages.PostUpdateNotPossible);
                 return result;
@@ -51,7 +51,7 @@ public class UpdatePostTextCommandHandler : IRequestHandler<UpdatePostTextComman
         }
         catch (Exception ex)
         {
-            result.AddError(ErrorCode.UnknownError, ex.Message);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

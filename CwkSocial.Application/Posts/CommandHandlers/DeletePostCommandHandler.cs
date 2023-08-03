@@ -16,7 +16,7 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
     {
         _context = context;
     }
-    
+
     public async Task<OperationResult<Post>> Handle(DeletePostCommand request, CancellationToken cancellationToken)
     {
         var result = new OperationResult<Post>();
@@ -27,12 +27,12 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
 
             if (post is null)
             {
-                result.AddError(ErrorCode.NotFound, 
+                result.AddError(ErrorCode.NotFound,
                     string.Format(PostsErrorMessages.PostNotFound, request.PostId));
                 return result;
             }
 
-             if(post.UserProfileId != request.UserProfileId)
+            if (post.UserProfileId != request.UserProfileId)
             {
                 result.AddError(ErrorCode.PostDeleteNotPossible, PostsErrorMessages.PostDeleteNotPossible);
                 return result;
@@ -43,11 +43,11 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Opera
 
             result.Payload = post;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-           result.AddUnknownError(e.Message);
+            result.AddUnknownError(ex.Message);
         }
-        
+
         return result;
     }
 }

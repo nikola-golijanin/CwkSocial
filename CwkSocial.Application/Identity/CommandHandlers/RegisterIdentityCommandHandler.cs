@@ -36,7 +36,7 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
         try
         {
             await CheckIfIdentityUserDoesNotExist(result, request);
-            if (request.IsError) return result;
+            if (result.IsError) return result;
 
             //creating transaction
             await using var transaction = _context.Database.BeginTransaction();
@@ -52,11 +52,11 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
         }
         catch (UserProfileNotValidException ex)
         {
-            ex.ValidationErrors.ForEach(e => result.AddError(ErrorCode.ValidationError,e));
+            ex.ValidationErrors.ForEach(e => result.AddError(ErrorCode.ValidationError, e));
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            result.AddUnknownError(e.Message);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;
@@ -69,7 +69,7 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
         var existingIdentity = await _userManager.FindByEmailAsync(request.Username);
 
         if (existingIdentity != null)
-            result.AddError(ErrorCode.IdentityUserAlreadyExists,IdentityErrorMessages.IdentityUserAlreadyExists);
+            result.AddError(ErrorCode.IdentityUserAlreadyExists, IdentityErrorMessages.IdentityUserAlreadyExists);
     }
 
     private async Task<IdentityUser> CreateIdentityUserAsync(OperationResult<string> result,
@@ -89,7 +89,7 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
 
             foreach (var identityCreatedError in identityCreatedResult.Errors)
             {
-                result.AddError(ErrorCode.IdentityCreationFailed,identityCreatedError.Description);
+                result.AddError(ErrorCode.IdentityCreationFailed, identityCreatedError.Description);
             }
         }
 
@@ -109,7 +109,7 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
             await _context.SaveChangesAsync();
             return userProfile;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
             throw;

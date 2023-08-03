@@ -31,13 +31,11 @@ public class
 
             if (userProfile is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No UserProfile with ID {request.UserProfileId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound,
+                    string.Format(UserProfilesErrorMessages.UserProfileNotFound, request.UserProfileId));
                 return result;
             }
-            
+
             var basicInfo = BasicInfo.CreateBasicInfo(request.FirstName, request.LastName, request.EmailAddress,
                 request.Phone, request.DateOfBirth, request.CurrentCity);
 
@@ -49,22 +47,11 @@ public class
         }
         catch (UserProfileNotValidException ex)
         {
-            result.IsError = true;
-            ex.ValidationErrors.ForEach(e =>
-            {
-                var error = new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = $"{e}",
-                };
-                result.Errors.Add(error);
-            });
+            ex.ValidationErrors.ForEach(e => result.AddError(ErrorCode.ValidationError, e));
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.IsError = true;
-            result.Errors.Add(error);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

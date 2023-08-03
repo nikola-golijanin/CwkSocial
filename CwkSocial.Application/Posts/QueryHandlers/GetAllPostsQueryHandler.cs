@@ -1,5 +1,4 @@
-﻿using CwkSocial.Application.Enums;
-using CwkSocial.Application.Models;
+﻿using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Queries;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
@@ -25,9 +24,9 @@ public class GetAllPostsQueryHandler : IRequestHandler<GetAllPostsQuery, Operati
         {
             result.Payload = await _context.Posts.ToListAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            result.AddUnknownError(e.Message);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

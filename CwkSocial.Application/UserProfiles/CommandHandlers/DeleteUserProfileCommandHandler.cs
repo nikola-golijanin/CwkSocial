@@ -28,10 +28,8 @@ public class DeleteUserProfileCommandHandler : IRequestHandler<DeleteUserProfile
 
             if (userProfile is null)
             {
-                result.IsError = true;
-                var error = new Error
-                    { Code = ErrorCode.NotFound, Message = $"No UserProfile with ID {request.UserProfileId}" };
-                result.Errors.Add(error);
+                result.AddError(ErrorCode.NotFound,
+                    string.Format(UserProfilesErrorMessages.UserProfileNotFound, request.UserProfileId));
                 return result;
             }
 
@@ -40,11 +38,9 @@ public class DeleteUserProfileCommandHandler : IRequestHandler<DeleteUserProfile
 
             result.Payload = userProfile;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            var error = new Error { Code = ErrorCode.InternalServerError, Message = e.Message };
-            result.IsError = true;
-            result.Errors.Add(error);
+            result.AddUnknownError(ex.Message);
         }
 
         return result;

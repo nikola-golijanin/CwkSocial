@@ -25,10 +25,8 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Operati
 
         if (post is null)
         {
-            result.IsError = true;
-            var error = new Error
-                { Code = ErrorCode.NotFound, Message = $"No Post with ID {request.PostId}" };
-            result.Errors.Add(error);
+            result.AddError(ErrorCode.NotFound,
+                string.Format(PostsErrorMessages.PostNotFound, request.PostId));
             return result;
         }
 
