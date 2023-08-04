@@ -204,5 +204,47 @@ public class PostsController : BaseController
         return NoContent();
     }
     
-    //TODO Create CRUD endpoints for Post Interactions
+    [HttpGet]
+    [Route(ApiRoutes.Posts.PostInteractions)]
+    [ValidateGuid("postId")]
+    public async Task<IActionResult> GetPostInteractions([FromRoute] string postId)
+    {
+    
+        var query = new GetPostInteractions
+        {
+            PostId = Guid.Parse(postId),
+        };
+
+        var result = await _mediator.Send(query);
+
+        if (result.IsError) return HandleErroroResponse(result.Errors);
+
+        var mappedResult = _mapper.Map<IEnumerable<PostInteractionResponse>>(result.Payload);
+        return Ok(mappedResult);
+    }
+
+    [HttpPost]
+    [Route(ApiRoutes.Posts.PostInteractions)]
+    [ValidateGuid("postId")]
+    [ValidateModel]
+    public async Task<IActionResult> AddPostInteraction([FromRoute] string postId, [FromBody] PostInteractionCreate interaction)
+    {
+        var postGuid = Guid.Parse(postId);
+        var userProfileId = HttpContext.GetUserProfileId();
+
+        var command = new AddInteraction
+        {
+            PostId = postGuid,
+            UserProfileId = userProfileId,
+            Type = interaction.Type
+        };
+
+        var result = await _mediator.Send(command, token);
+
+        if (result.IsError) HandleErrorResponse(result.Errors);
+
+        var mapped = _mapper.Map<PostInteractionResponse>(result.Payload);
+
+        return Ok(mapped);
+    }
 }
