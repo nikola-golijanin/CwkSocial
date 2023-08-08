@@ -1,4 +1,5 @@
-﻿using CwkSocial.Application.Models;
+﻿using CwkSocial.Application.Enums;
+using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Queries;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
@@ -26,6 +27,12 @@ public class
             var post = await _context.Posts
                 .Include(p => p.Comments)
                 .FirstOrDefaultAsync(p => p.PostId == request.PostId);
+            
+            if (post is null)
+            {
+                result.AddError(ErrorCode.NotFound,
+                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
+            }
 
             result.Payload = post.Comments;
         }

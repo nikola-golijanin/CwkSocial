@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using CwkSocial.Api.Contracts.Identity;
+using CwkSocial.Api.Extensions;
 using CwkSocial.Api.Filters;
 using CwkSocial.Application.Identity.Commands;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CwkSocial.Api.Controllers.V1;
@@ -29,7 +32,7 @@ public class IdentityController : BaseController
         var command = _mapper.Map<RegisterIdentityCommand>(registration);
         var result = await _mediator.Send(command);
 
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         var authResult = new AuthenticationResult
         {
@@ -47,7 +50,7 @@ public class IdentityController : BaseController
         var command = _mapper.Map<LoginCommand>(login);
         var result = await _mediator.Send(command);
 
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         var authResult = new AuthenticationResult
         {
@@ -70,9 +73,9 @@ public class IdentityController : BaseController
             IdentityUserId = identityUserGuid,
             RequestorGuid = requestorGuid
         };
-        var result = await _mediator.Send(command, token);
+        var result = await _mediator.Send(command);
 
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         return NoContent();
     }

@@ -1,3 +1,4 @@
+using CwkSocial.Application.Enums;
 using CwkSocial.Application.Models;
 using CwkSocial.Application.Posts.Queries;
 using CwkSocial.DataAccess;
@@ -30,8 +31,8 @@ public class GetPostInteractionsHandler : IRequestHandler<GetPostInteractions, O
 
             if (post is null)
             {
-                result.AddError(ErrorCode.NotFound, PostsErrorMessages.PostNotFound);
-                return result;
+                result.AddError(ErrorCode.NotFound,
+                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
             }
 
             result.Payload = post.Interactions;

@@ -1,5 +1,6 @@
 using CwkSocial.Application.Enums;
 using CwkSocial.Application.Models;
+using CwkSocial.Application.Posts;
 using CwkSocial.Application.Posts.Commands;
 using CwkSocial.DataAccess;
 using CwkSocial.Domain.Aggregate.PostAggregate;
@@ -22,7 +23,9 @@ public class AddInteractionHandler : IRequestHandler<AddInteraction, OperationRe
         var result = new OperationResult<PostInteraction>();
         try
         {
-            var post = await _context.Posts.Include(p => p.Interactions)
+            var post = await _context.Posts
+                .Include(p => p.Interactions)
+                .ThenInclude(i => i.UserProfile)
                 .FirstOrDefaultAsync(p => p.PostId == request.PostId);
 
             if (post is null)

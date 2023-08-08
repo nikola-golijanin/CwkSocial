@@ -13,58 +13,46 @@ public class UpdatePostCommentCommandHandler
 {
     
     private readonly DataContext _context;
+    private readonly OperationResult<PostComment> _result;
 
     public UpdatePostCommentCommandHandler(DataContext context)
     {
         _context = context;
+        _result = new OperationResult<PostComment>();
+
     }
 
     public async Task<OperationResult<PostComment>> Handle(UpdatePostCommentCommand request, CancellationToken cancellationToken)
     {
-        var result = new OperationResult<PostComment>();
+        var post = await _context.Posts
+            .Include(p => p.Comments)
+            .FirstOrDefaultAsync(p => p.PostId == request.PostId);
 
-        try
+        if (post == null)
         {
-            var post = await _context.Posts
-                .Include(p => p.Comments)
-                .FirstOrDefaultAsync(p => p.PostId == request.PostId);
-            
-            if (post is null)
-            {
-                result.AddError(ErrorCode.NotFound, 
-                    string.Format(PostsErrorMessages.PostNotFound, request.PostId));
-                return result;
-            }
-            
-            var comment = post.Comments
-                .FirstOrDefault(c => c.CommentId == request.CommentId);
-            
-            if (comment is null)
-            {
-                result.AddError(ErrorCode.NotFound, 
-                    string.Format(PostsErrorMessages.CommentNotFound, request.CommentId));
-                return result;
-            }
-            
-
-            if (comment.UserProfileId != request.UserProfileId)
-            {
-                _result.AddError(ErrorCode.CommentRemovalNotAuthorized, 
-                    PostsErrorMessages.CommentRemovalNotAuthorized);
-                return _result;
-            }
-            
-            comment.UpdateCommentText(request.UpdatedText);
-            _context.Posts.Update(post);
-            await _context.SaveChangesAsync();
-
-            result.Payload = comment;
-        }
-        catch (Exception ex)
-        {
-            result.AddUnknownError(ex.Message);
+            _result.AddError(ErrorCode.NotFound, PostsErrorMessages.PostNotFound);
+            return _result;
         }
 
-        return result;
+        var comment = post.Comments
+            .FirstOrDefault(c => c.CommentId == request.CommentId);
+        if (comment == null)
+        {
+            _result.AddError(ErrorCode.NotFound, PostsErrorMessages.PostCommentNotFound);
+            return _result;
+        }
+
+        if (comment.UserProfileId != request.UserProfileId)
+        {
+            _result.AddError(ErrorCode.CommentRemovalNotAuthorized, 
+                PostsErrorMessages.CommentRemovalNotAuthorized);
+            return _result;
+        }
+
+        comment.UpdateCommentText(request.UpdatedText);
+        _context.Posts.Update(post);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return _result;
     }
 }

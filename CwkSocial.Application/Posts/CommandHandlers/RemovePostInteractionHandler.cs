@@ -51,7 +51,7 @@ public class RemovePostInteractionHandler : IRequestHandler<RemovePostInteractio
 
             post.RemoveInteraction(interaction);
             _context.Posts.Update(post);
-            await _ctx.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             result.Payload = interaction;
         }

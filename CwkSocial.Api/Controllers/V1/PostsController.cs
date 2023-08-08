@@ -47,7 +47,7 @@ public class PostsController : BaseController
 
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         var post = _mapper.Map<PostResponse>(result.Payload);
@@ -71,7 +71,7 @@ public class PostsController : BaseController
 
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         var post = _mapper.Map<PostResponse>(result.Payload);
@@ -99,7 +99,7 @@ public class PostsController : BaseController
 
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         return NoContent();
@@ -121,7 +121,7 @@ public class PostsController : BaseController
 
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         return NoContent();
@@ -137,7 +137,7 @@ public class PostsController : BaseController
 
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         var comments = _mapper.Map<IEnumerable<PostCommentResponse>>(result.Payload);
@@ -163,7 +163,7 @@ public class PostsController : BaseController
         var result = await _mediator.Send(command);
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         var comment = _mapper.Map<PostCommentResponse>(result.Payload);
@@ -188,7 +188,7 @@ public class PostsController : BaseController
         
         var result = await _mediator.Send(command);
         
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
             
         return NoContent();
     }
@@ -210,7 +210,7 @@ public class PostsController : BaseController
 
         var result = await _mediator.Send(command);
 
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         return NoContent();
     }
@@ -228,7 +228,7 @@ public class PostsController : BaseController
 
         var result = await _mediator.Send(query);
 
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         var mappedResult = _mapper.Map<IEnumerable<PostInteractionResponse>>(result.Payload);
         return Ok(mappedResult);
@@ -252,7 +252,7 @@ public class PostsController : BaseController
 
         var result = await _mediator.Send(command);
 
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         var mapped = _mapper.Map<PostInteractionResponse>(result.Payload);
 
@@ -277,7 +277,7 @@ public class PostsController : BaseController
 
         var result = await _mediator.Send(command);
         
-        if (result.IsError) return HandleErroroResponse(result.Errors);
+        if (result.IsError) return HandleErrorResponse(result.Errors);
 
         var mapped = _mapper.Map<PostInteractionResponse>(result.Payload);
 

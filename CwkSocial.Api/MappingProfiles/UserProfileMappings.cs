@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CwkSocial.Api.Contracts.Posts.Responses;
 using CwkSocial.Api.Contracts.UserProfile.Requests;
 using CwkSocial.Api.Contracts.UserProfile.Responses;
 using CwkSocial.Application.UserProfiles.Commands;

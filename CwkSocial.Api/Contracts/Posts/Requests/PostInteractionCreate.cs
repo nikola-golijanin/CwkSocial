@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CwkSocial.Domain.Aggregate.PostAggregate;
 
 namespace CwkSocial.Api.Contracts.Posts.Requests;
 

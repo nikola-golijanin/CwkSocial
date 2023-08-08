@@ -46,7 +46,7 @@ public class UserProfilesController : BaseController
 
         if (result.IsError)
         {
-            return HandleErroroResponse(result.Errors);
+            return HandleErrorResponse(result.Errors);
         }
 
         var userProfile = _mapper.Map<UserProfileResponse>(result.Payload);
@@ -64,7 +64,7 @@ public class UserProfilesController : BaseController
         var result = await _mediator.Send(command);
 
         return result.IsError
-            ? HandleErroroResponse(result.Errors)
+            ? HandleErrorResponse(result.Errors)
             : NoContent();
     }
 }

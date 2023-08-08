@@ -34,7 +34,7 @@ public class RemoveAccountHandler : IRequestHandler<RemoveAccount, OperationResu
                 return result;
             }
 
-            var userProfile = await _ctx.UserProfiles
+            var userProfile = await _context.UserProfiles
                 .FirstOrDefaultAsync(up => up.IdentityId == request.IdentityUserId.ToString());
 
             if (userProfile == null)
