@@ -34,8 +34,6 @@ public class AddPostCommentCommandHandler : IRequestHandler<AddPostCommentComman
                 return result;
             }
 
-            //TODO check for userProfile
-            
             var comment = PostComment.CreatePostComment(request.PostId, request.Text, request.UserProfileId);
             post.AddPostComment(comment);
             _context.Posts.Update(post);

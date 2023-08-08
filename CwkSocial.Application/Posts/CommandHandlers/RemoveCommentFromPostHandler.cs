@@ -12,7 +12,6 @@ public class RemoveCommentFromPostHandler
     : IRequestHandler<RemoveCommentFromPost, OperationResult<PostComment>>
 {
     private readonly DataContext _context;
-    //TODO refactor all handlers with this
     private readonly OperationResult<PostComment> _result;
 
     public RemoveCommentFromPostHandler(DataContext context)

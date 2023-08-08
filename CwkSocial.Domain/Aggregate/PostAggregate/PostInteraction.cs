@@ -17,7 +17,6 @@ public class PostInteraction
     //factories
     public static PostInteraction CreatePostInteraction(Guid postId, Guid userProfileId, InteractionType interactionType)
     {
-        //TODO: add validation, error handling strategies, error notification strategies
         return new PostInteraction
         {
             PostId = postId,
