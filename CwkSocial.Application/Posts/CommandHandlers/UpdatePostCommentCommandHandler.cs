@@ -46,7 +46,13 @@ public class UpdatePostCommentCommandHandler
                 return result;
             }
             
-            //TODO check for userProfile
+
+            if (comment.UserProfileId != request.UserProfileId)
+            {
+                _result.AddError(ErrorCode.CommentRemovalNotAuthorized, 
+                    PostsErrorMessages.CommentRemovalNotAuthorized);
+                return _result;
+            }
             
             comment.UpdateCommentText(request.UpdatedText);
             _context.Posts.Update(post);

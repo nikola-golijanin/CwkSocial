@@ -20,6 +20,8 @@ public enum ErrorCode
     IdentityUserDoesNotExist = 304,
     IncorrectPassword = 305,
     UnauthorizedAccountRemoval = 306,
+    CommentRemovalNotAuthorized = 307,
+
 
     UnknownError = 999,
 }

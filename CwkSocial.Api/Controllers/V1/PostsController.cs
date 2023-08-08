@@ -189,9 +189,10 @@ public class PostsController : BaseController
     public async Task<IActionResult> UpdateCommentText([FromRoute] string postId, [FromRoute]string commentId,
         [FromBody] PostCommentUpdate updatedComment)
     {
+        var userProfileId = HttpContext.GetUserProfileId();
         var command = new UpdatePostCommentCommand
         {
-            UserProfileId = Guid.Parse(updatedComment.UserProfileId),
+            UserProfileId = userProfileId,
             PostId = Guid.Parse(postId),
             CommentId = Guid.Parse(commentId),
             UpdatedText = updatedComment.Text
@@ -201,6 +202,28 @@ public class PostsController : BaseController
         
         if (result.IsError) return HandleErroroResponse(result.Errors);
             
+        return NoContent();
+    }
+
+    [HttpDelete]
+    [Route(ApiRoutes.Posts.CommentById)]
+    [ValidateGuid("postId", "commentId")]
+    public async Task<IActionResult> RemoveCommentFromPost([FromRoute] string postId, [FromRoute] string commentId)
+    {
+        var userProfileId = HttpContext.GetUserProfileId();
+        var postGuid = Guid.Parse(postId);
+        var commentGuid = Guid.Parse(commentId);
+        var command = new RemoveCommentFromPost
+        {
+            UserProfileId = userProfileId,
+            CommentId = commentGuid,
+            PostId = postGuid
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsError) return HandleErroroResponse(result.Errors);
+
         return NoContent();
     }
     
