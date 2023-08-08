@@ -239,9 +239,34 @@ public class PostsController : BaseController
             Type = interaction.Type
         };
 
-        var result = await _mediator.Send(command, token);
+        var result = await _mediator.Send(command);
 
-        if (result.IsError) HandleErrorResponse(result.Errors);
+        if (result.IsError) return HandleErroroResponse(result.Errors);
+
+        var mapped = _mapper.Map<PostInteractionResponse>(result.Payload);
+
+        return Ok(mapped);
+    }
+
+
+    [HttpDelete]
+    [Route(ApiRoutes.Posts.InteractionById)]
+    [ValidateGuid("postId", "interactionId")]
+    public async Task<IActionResult> RemovePostInteraction([FromRoute] string postId,[FromRoute] string interactionId)
+    {
+        var postGuid = Guid.Parse(postId);
+        var interactionGuid = Guid.Parse(interactionId);
+        var userProfileGuid = HttpContext.GetUserProfileId();
+        var command = new RemovePostInteraction
+        {
+            PostId = postGuid,
+            InteractionId = interactionGuid,
+            UserProfileId = userProfileGuid
+        };
+
+        var result = await _mediator.Send(command);
+        
+        if (result.IsError) return HandleErroroResponse(result.Errors);
 
         var mapped = _mapper.Map<PostInteractionResponse>(result.Payload);
 

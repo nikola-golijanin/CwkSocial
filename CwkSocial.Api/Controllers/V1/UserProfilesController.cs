@@ -67,19 +67,4 @@ public class UserProfilesController : BaseController
             ? HandleErroroResponse(result.Errors)
             : NoContent();
     }
-
-    
-    //TODO move to identity controller, when identity is deleted then should user profile be deleted
-    [HttpDelete]
-    [Route(ApiRoutes.UserProfiles.IdRoute)]
-    [ValidateGuid("id")]
-    public async Task<IActionResult> DeleteUserProfile(string id)
-    {
-        var command = new DeleteUserProfileCommand { UserProfileId = Guid.Parse(id) };
-        var result = await _mediator.Send(command);
-
-        return result.IsError
-            ? HandleErroroResponse(result.Errors)
-            : NoContent();
-    }
 }
