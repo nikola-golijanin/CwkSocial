@@ -151,20 +151,8 @@ public class PostsController : BaseController
     public async Task<IActionResult> AddCommentToPost([FromRoute] string postId,
         [FromBody] PostCommentCreate newComment)
     {
-        var isUserProfileIdValid = Guid.TryParse(newComment.UserProfileId, out var userProfileId);
-
-        if (!isUserProfileIdValid)
-        {
-            var apiError = new ErrorResponse
-            {
-                StatusCode = 400,
-                StatusPhrase = "Bad request",
-                Timestamp = DateTime.Now,
-                Errors = { "Provided User profile ID is not in valid Guid format" }
-            };
-            return BadRequest(apiError);
-        }
-
+        var userProfileId = HttpContext.GetUserProfileId();
+        
         var command = new AddPostCommentCommand
         {
             PostId = Guid.Parse(postId),
