@@ -3,6 +3,7 @@ using CwkSocial.Api.Contracts.Identity;
 using CwkSocial.Api.Extensions;
 using CwkSocial.Api.Filters;
 using CwkSocial.Application.Identity.Commands;
+using CwkSocial.Application.Identity.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -34,12 +35,7 @@ public class IdentityController : BaseController
 
         if (result.IsError) return HandleErrorResponse(result.Errors);
 
-        var authResult = new AuthenticationResult
-        {
-            Token = result.Payload
-        };
-
-        return Ok(authResult);
+        return Ok(_mapper.Map<IdentityUserProfile>(result.Payload));
     }
 
     [HttpPost]
@@ -52,12 +48,7 @@ public class IdentityController : BaseController
 
         if (result.IsError) return HandleErrorResponse(result.Errors);
 
-        var authResult = new AuthenticationResult
-        {
-            Token = result.Payload
-        };
-
-        return Ok(authResult);
+        return Ok(_mapper.Map<IdentityUserProfile>(result.Payload));
     }
 
     [HttpDelete]
@@ -78,5 +69,21 @@ public class IdentityController : BaseController
         if (result.IsError) return HandleErrorResponse(result.Errors);
 
         return NoContent();
+    }
+    
+    [HttpGet]
+    [Route(ApiRoutes.Identity.CurrentUser)]
+    [Authorize( AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> CurrentUser(CancellationToken token)
+    {
+        var userProfileId = HttpContext.GetUserProfileId();
+        var identityId = HttpContext.GetIdentityId();
+
+        var query = new GetCurrentUser { UserProfileId = userProfileId, IdentityId = identityId};
+        var result = await _mediator.Send(query);
+
+        if (result.IsError) return HandleErrorResponse(result.Errors);
+
+        return Ok(_mapper.Map<IdentityUserProfile>(result.Payload));
     }
 }

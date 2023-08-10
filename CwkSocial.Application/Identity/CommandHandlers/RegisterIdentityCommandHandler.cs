@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using AutoMapper;
 using CwkSocial.Application.Enums;
 using CwkSocial.Application.Identity.Commands;
+using CwkSocial.Application.Identity.Dtos;
 using CwkSocial.Application.Models;
 using CwkSocial.Application.Services;
 using CwkSocial.DataAccess;
@@ -13,42 +15,47 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CwkSocial.Application.Identity.CommandHandlers;
 
-public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCommand, OperationResult<string>>
+public class
+    RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCommand, OperationResult<IdentityUserProfileDto>>
 {
     private readonly DataContext _context;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly IdentityService _identityService;
-
+    private readonly IMapper _mapper;
+    private OperationResult<IdentityUserProfileDto> _result = new();
 
     public RegisterIdentityCommandHandler(DataContext context, UserManager<IdentityUser> userManager,
-        IdentityService identityService)
+        IdentityService identityService, IMapper mapper)
     {
         _context = context;
         _userManager = userManager;
         _identityService = identityService;
+        _mapper = mapper;
     }
 
 
-    public async Task<OperationResult<string>> Handle(RegisterIdentityCommand request,
+    public async Task<OperationResult<IdentityUserProfileDto>> Handle(RegisterIdentityCommand request,
         CancellationToken cancellationToken)
     {
         var result = new OperationResult<string>();
         try
         {
-            await CheckIfIdentityUserDoesNotExist(result, request);
-            if (result.IsError) return result;
+            await CheckIfIdentityUserDoesNotExist(request);
+            if (_result.IsError) return _result;
 
             //creating transaction
             await using var transaction = _context.Database.BeginTransaction();
 
-            var identityUser = await CreateIdentityUserAsync(result, request, transaction);
-            if (result.IsError) return result;
+            var identityUser = await CreateIdentityUserAsync(request, transaction);
+            if (_result.IsError) return _result;
 
-            var userProfile = await CreateUserProfileAsync(result, request, transaction, identityUser);
+            var userProfile = await CreateUserProfileAsync(request, transaction, identityUser);
             await transaction.CommitAsync();
 
-            result.Payload = GetJwtString(identityUser, userProfile);
-            return result;
+            _result.Payload = _mapper.Map<IdentityUserProfileDto>(userProfile);
+            _result.Payload.UserName = identityUser.UserName;
+            _result.Payload.Token = GetJwtString(identityUser, userProfile);
+            return _result;
         }
         catch (UserProfileNotValidException ex)
         {
@@ -59,20 +66,20 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
             result.AddUnknownError(ex.Message);
         }
 
-        return result;
+        return _result;
     }
 
 
-    private async Task CheckIfIdentityUserDoesNotExist(OperationResult<string> result,
+    private async Task CheckIfIdentityUserDoesNotExist(
         RegisterIdentityCommand request)
     {
         var existingIdentity = await _userManager.FindByEmailAsync(request.Username);
 
         if (existingIdentity != null)
-            result.AddError(ErrorCode.IdentityUserAlreadyExists, IdentityErrorMessages.IdentityUserAlreadyExists);
+            _result.AddError(ErrorCode.IdentityUserAlreadyExists, IdentityErrorMessages.IdentityUserAlreadyExists);
     }
 
-    private async Task<IdentityUser> CreateIdentityUserAsync(OperationResult<string> result,
+    private async Task<IdentityUser> CreateIdentityUserAsync(
         RegisterIdentityCommand request, IDbContextTransaction transaction)
     {
         var identity = new IdentityUser
@@ -89,15 +96,15 @@ public class RegisterIdentityCommandHandler : IRequestHandler<RegisterIdentityCo
 
             foreach (var identityCreatedError in identityCreatedResult.Errors)
             {
-                result.AddError(ErrorCode.IdentityCreationFailed, identityCreatedError.Description);
+                _result.AddError(ErrorCode.IdentityCreationFailed, identityCreatedError.Description);
             }
         }
 
         return identity;
     }
 
-    private async Task<UserProfile> CreateUserProfileAsync(OperationResult<string> result,
-        RegisterIdentityCommand request, IDbContextTransaction transaction, IdentityUser identity)
+    private async Task<UserProfile> CreateUserProfileAsync(RegisterIdentityCommand request,
+        IDbContextTransaction transaction, IdentityUser identity)
     {
         try
         {
